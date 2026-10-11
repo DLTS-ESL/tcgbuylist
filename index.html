@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Card Buy List</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 24px;
+    font-family: Arial, sans-serif;
+    background: #f3f5f9;
+    color: #222;
+}
+
+header {
+    max-width: 1200px;
+    margin: 0 auto 24px;
+}
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 32px;
+}
+
+.subtitle {
+    color: #666;
+    margin: 0 0 20px;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #2463eb;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.88;
+}
+
+button.secondary {
+    background: #555;
+}
+
+button.delete {
+    background: #dc3545;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+#cardGrid {
+    max-width: 1200px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 24px 16px;
+}
+
+.card-item {
+    min-width: 0;
+    text-align: center;
+}
+
+.card-image-area {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background: white;
+    border: 2px dashed #c5cbd5;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-image-area img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.card-price {
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    width: calc(100% - 10px);
+    padding: 10px 4px;
+    border: 2px solid #2463eb;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.96);
+    color: #111;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    min-height: 50px;
+}
+
+.card-price::placeholder {
+    color: #777;
+    font-weight: normal;
+}
+
+.quantity-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.quantity-symbol {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.quantity-input {
+    width: 100%;
+    min-width: 0;
+    height: 58px;
+    padding: 8px;
+    border: 2px solid #b9c2d0;
+    border-radius: 8px;
+    background: white;
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.card-price:focus,
+.quantity-input:focus {
+    outline: 3px solid #a8c5ff;
+    border-color: #2463eb;
+}
+
+.card-actions {
+    margin-top: 10px;
+}
+
+.empty-message {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 40px 20px;
+    text-align: center;
+    color: #777;
+    background: white;
+    border-radius: 12px;
+}
+
+@media (max-width: 850px) {
+    #cardGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 500px) {
+    body {
+        padding: 14px;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+
+    #cardGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px 12px;
+    }
+
+    .card-price {
+        font-size: 18px;
+        min-height: 44px;
+    }
+
+    .quantity-input {
+        font-size: 24px;
+        height: 54px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🃏 Card Buy List</h1>
+    <p class="subtitle">
+        Organize the cards you want to buy. Enter your desired quantity and price.
+    </p>
+
+    <div class="toolbar">
+        <button onclick="addCard()">+ Add Card</button>
+        <button class="secondary" onclick="document.getElementById('imageUpload').click()">
+            Upload Card Images
+        </button>
+        <button class="secondary" onclick="window.print()">Print List</button>
+        <button class="secondary" onclick="clearList()">Clear All</button>
+    </div>
+
+    <input
+        id="imageUpload"
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+        onchange="handleUploads(event)"
+    >
+</header>
+
+<main>
+    <div id="cardGrid"></div>
+
+    <div id="emptyMessage" class="empty-message">
+        No cards added yet. Click <strong>+ Add Card</strong> to get started,
+        or upload card images.
+    </div>
+</main>
+
+<script>
+const grid = document.getElementById("cardGrid");
+const emptyMessage = document.getElementById("emptyMessage");
+
+function updateEmptyMessage() {
+    emptyMessage.style.display =
+        grid.children.length === 0 ? "block" : "none";
+}
+
+function addCard(imageUrl = "") {
+    const item = document.createElement("div");
+    item.className = "card-item";
+
+    const imageArea = document.createElement("div");
+    imageArea.className = "card-image-area";
+
+    if (imageUrl) {
+        const img = document.createElement("img");
+        img.src = imageUrl;
+        img.alt = "Card image";
+        imageArea.appendChild(img);
+    } else {
+        imageArea.style.cursor = "pointer";
+        imageArea.title = "Click to upload a card image";
+        imageArea.innerHTML =
+            '<span style="display:flex;align-items:center;justify-content:center;height:100%;padding:10px;color:#888;font-size:15px;">+ Card Image</span>';
+
+        imageArea.onclick = () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+
+            input.onchange = event => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = e => {
+                    imageArea.innerHTML = "";
+                    imageArea.style.cursor = "default";
+
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.alt = "Card image";
+                    imageArea.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            };
+
+            input.click();
+        };
+    }
+
+    const price = document.createElement("input");
+    price.type = "text";
+    price.inputMode = "decimal";
+    price.className = "card-price";
+    price.placeholder = "Price";
+    price.setAttribute("aria-label", "Desired card price");
+
+    const quantityRow = document.createElement("div");
+    quantityRow.className = "quantity-row";
+
+    const symbol = document.createElement("span");
+    symbol.className = "quantity-symbol";
+    symbol.textContent = "×";
+
+    const quantity = document.createElement("input");
+    quantity.type = "number";
+    quantity.min = "0";
+    quantity.step = "1";
+    quantity.value = "1";
+    quantity.className = "quantity-input";
+    quantity.setAttribute("aria-label", "Desired quantity");
+
+    quantityRow.append(symbol, quantity);
+
+    const actions = document.createElement("div");
+    actions.className = "card-actions";
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "delete";
+    deleteButton.textContent = "Remove";
+    deleteButton.onclick = () => {
+        item.remove();
+        updateEmptyMessage();
+    };
+
+    actions.appendChild(deleteButton);
+    item.append(imageArea, quantityRow, actions);
+    grid.appendChild(item);
+
+    updateEmptyMessage();
+}
+
+function handleUploads(event) {
+    const files = Array.from(event.target.files || []);
+
+    files.forEach(file => {
+        if (!file.type.startsWith("image/")) return;
+
+        const reader = new FileReader();
+        reader.onload = e => addCard(e.target.result);
+        reader.readAsDataURL(file);
+    });
+
+    event.target.value = "";
+}
+
+function clearList() {
+    if (!grid.children.length) return;
+
+    if (confirm("Remove all cards from your list?")) {
+        grid.innerHTML = "";
+        updateEmptyMessage();
+    }
+}
+
+updateEmptyMessage();
+</script>
+
+</body>
+</html>

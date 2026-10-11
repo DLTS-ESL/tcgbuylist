@@ -3,456 +3,481 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Card Buy List</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Buying List</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
-    margin: 0;
-    padding: 24px;
     font-family: Arial, sans-serif;
-    background: #f2f4f8;
+    margin: 0;
+    padding: 20px;
+    background: #f3f4f6;
     color: #222;
 }
 
 header {
     max-width: 1200px;
-    margin: 0 auto 24px;
+    margin: 0 auto 20px;
 }
 
-h1 { margin: 0 0 8px; font-size: 32px; }
-.subtitle { color: #666; margin: 0 0 20px; }
+h1 {
+    margin: 0 0 8px;
+    font-size: 26px;
+}
+
+.instructions {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
 
 .toolbar {
     display: flex;
-    flex-wrap: wrap;
     gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
 button {
-    padding: 12px 18px;
-    border: 0;
+    border: none;
     border-radius: 8px;
-    background: #2463eb;
-    color: white;
-    font-size: 16px;
+    padding: 11px 16px;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
 }
 
-button.secondary { background: #555; }
-button.delete { background: #dc3545; font-size: 13px; padding: 8px 12px; }
+#addCard {
+    background: #2563eb;
+    color: white;
+}
 
-#status {
-    margin-top: 12px;
-    color: #287443;
-    font-size: 14px;
+#saveImage {
+    background: #15803d;
+    color: white;
+}
+
+.remove-card {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 7px 10px;
 }
 
 #cardGrid {
-    width: 100%;
     max-width: 1200px;
-    margin: auto;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 24px 16px;
+    gap: 16px;
     align-items: start;
 }
 
-.card-item { min-width: 0; }
-
-.card-image-area {
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    position: relative;
-    overflow: hidden;
+.card {
+    min-width: 0;
     background: white;
-    border: 2px dashed #c5cbd5;
-    border-radius: 10px;
-    cursor: pointer;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 2px 6px #0000000d;
 }
 
-.card-image-area img {
+.card.dragging {
+    opacity: 0.4;
+}
+
+.card.drag-over {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.card-image-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background: #f3f4f6;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.card-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block;
 }
 
-.placeholder {
-    height: 100%;
+.quantity-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 8px;
+    border-radius: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
-    text-align: center;
-    color: #888;
+    background: #111827;
+    color: white;
+    border: 2px solid white;
+    font-size: 17px;
+    font-weight: bold;
+    box-shadow: 0 2px 6px #0005;
+    pointer-events: none;
 }
 
-.fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 12px;
+.quantity-badge:empty {
+    display: none;
 }
 
-.field { min-width: 0; }
+.field {
+    margin-bottom: 10px;
+}
 
 .field label {
     display: block;
-    text-align: center;
-    margin-bottom: 5px;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
+    color: #555;
+    margin-bottom: 5px;
 }
 
 .field input {
-    display: block;
     width: 100%;
-    min-width: 0;
-    height: 58px;
-    padding: 6px;
-    border: 2px solid #b9c2d0;
-    border-radius: 8px;
+    padding: 10px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    font-size: 16px;
     background: white;
     color: #111;
-    text-align: center;
-    font-family: Arial, sans-serif;
-    font-size: 23px;
-    font-weight: bold;
 }
 
 .field input:focus {
-    outline: 3px solid #a8c5ff;
-    border-color: #2463eb;
+    outline: 2px solid #93c5fd;
+    border-color: #2563eb;
+}
+
+.image-upload {
+    width: 100%;
+    font-size: 12px;
+    margin-bottom: 10px;
 }
 
 .card-actions {
-    margin-top: 10px;
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
 }
 
-#emptyMessage {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 40px 20px;
-    text-align: center;
-    background: white;
-    border-radius: 12px;
+.drag-handle {
+    font-size: 12px;
     color: #777;
+    cursor: grab;
+    user-select: none;
 }
 
-@media (max-width: 850px) {
-    #cardGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.empty-message {
+    max-width: 1200px;
+    margin: 25px auto;
+    color: #777;
+    text-align: center;
 }
 
-@media (max-width: 500px) {
-    body { padding: 12px; }
-    h1 { font-size: 26px; }
-    #cardGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
-    .field input { height: 52px; font-size: 20px; }
-    .field label { font-size: 12px; }
+@media (max-width: 900px) {
+    #cardGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
-/* Applied only temporarily while creating the JPEG */
-body.exporting {
-    background: white;
+@media (max-width: 560px) {
+    body {
+        padding: 10px;
+    }
+
+    #cardGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .card {
+        padding: 8px;
+    }
 }
 
-body.exporting header,
-body.exporting #emptyMessage,
-body.exporting .card-actions {
+/* JPEG export styling */
+.export-mode {
+    width: 1200px !important;
+    max-width: none !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+    background: white !important;
+    padding: 20px !important;
+}
+
+.export-mode .card {
+    break-inside: avoid;
+    box-shadow: none;
+}
+
+.export-mode .remove-card,
+.export-mode .drag-handle,
+.export-mode .image-upload,
+.export-mode .field label {
     display: none !important;
 }
 
-body.exporting #cardGrid {
-    width: 1200px !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 24px !important;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 24px 16px !important;
-    background: white;
-}
-
-body.exporting .card-image-area {
-    border: none !important;
-    border-radius: 0 !important;
-    cursor: default;
-}
-
-body.exporting .fields {
+.export-mode .field {
     margin-top: 8px;
-    gap: 4px;
+    margin-bottom: 0;
 }
 
-body.exporting .field label {
-    font-size: 16px;
-    color: #111;
-}
-
-body.exporting .field input {
-    height: auto !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    border-radius: 0 !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    color: #111 !important;
-    font-size: 22px !important;
+.export-mode .field input {
+    border: none;
+    background: transparent;
+    padding: 4px 0;
+    font-size: 18px;
     font-weight: bold;
-    appearance: none;
-    -webkit-appearance: none;
+    pointer-events: none;
+}
+
+.export-mode .quantity-badge {
+    display: flex;
+}
+
+.export-mode .card-image-wrap {
+    margin-bottom: 6px;
 }
 </style>
 </head>
 
 <body>
-<header>
-    <h1>🃏 Card Buy List</h1>
-    <p class="subtitle">
-        Add cards, enter your desired quantity and price, then export the complete list as one JPEG.
-    </p>
 
-    <div class="toolbar">
-        <button type="button" onclick="addCard()">+ Add Card</button>
-        <button type="button" onclick="document.getElementById('imageUpload').click()">Upload Card Images</button>
-        <button type="button" onclick="exportJPEG()">📷 Save as JPEG</button>
-        <button type="button" class="secondary" onclick="window.print()">Print</button>
-        <button type="button" class="secondary" onclick="clearList()">Clear All</button>
+<header>
+    <h1>Card Buying List</h1>
+    <div class="instructions">
+        Upload card photos, enter the quantity and price you want to buy,
+        and drag cards to rearrange them. Up to 5 cards per row.
     </div>
 
-    <input id="imageUpload" type="file" accept="image/*" multiple hidden>
-    <div id="status" aria-live="polite"></div>
+    <div class="toolbar">
+        <button id="addCard" type="button">+ Add Card</button>
+        <button id="saveImage" type="button">Save as JPEG</button>
+    </div>
 </header>
 
 <main>
     <div id="cardGrid"></div>
-    <div id="emptyMessage">
-        <strong>No cards added yet.</strong>
-        <p>Click Add Card or Upload Card Images to begin.</p>
+    <div id="emptyMessage" class="empty-message">
+        No cards yet. Click “Add Card” to begin.
     </div>
 </main>
 
 <script>
 const grid = document.getElementById("cardGrid");
-const statusText = document.getElementById("status");
+const emptyMessage = document.getElementById("emptyMessage");
+const addButton = document.getElementById("addCard");
+const saveButton = document.getElementById("saveImage");
+
+let draggedCard = null;
+let cardCounter = 0;
 
 function updateEmptyMessage() {
-    document.getElementById("emptyMessage").style.display =
-        grid.children.length ? "none" : "block";
+    emptyMessage.style.display =
+        grid.querySelector(".card") ? "none" : "block";
 }
 
-function addCard(data = {}) {
-    const item = document.createElement("div");
-    item.className = "card-item";
+function updateQuantityBadge(card) {
+    const quantity = card.querySelector(".quantity-input").value.trim();
+    const badge = card.querySelector(".quantity-badge");
+    badge.textContent = quantity;
+}
 
-    const imageArea = document.createElement("div");
-    imageArea.className = "card-image-area";
+function createCard() {
+    cardCounter++;
 
-    function showPlaceholder() {
-        imageArea.innerHTML = "";
-        const placeholder = document.createElement("div");
-        placeholder.className = "placeholder";
-        placeholder.textContent = "+ Add Card Image";
-        imageArea.appendChild(placeholder);
-    }
+    const card = document.createElement("section");
+    card.className = "card";
+    card.draggable = true;
 
-    function setImage(src) {
-        imageArea.innerHTML = "";
-        const img = document.createElement("img");
-        img.src = src;
-        img.alt = "Card image";
-        imageArea.appendChild(img);
-    }
+    card.innerHTML = `
+        <div class="card-image-wrap">
+            <img class="card-image" alt="Card photo">
+            <div class="quantity-badge"></div>
+        </div>
 
-    if (data.image) setImage(data.image);
-    else showPlaceholder();
+        <input class="image-upload" type="file" accept="image/*"
+               aria-label="Upload card photo">
 
-    imageArea.addEventListener("click", () => {
-        const picker = document.createElement("input");
-        picker.type = "file";
-        picker.accept = "image/*";
+        <div class="field">
+            <label>Quantity wanted</label>
+            <input class="quantity-input" type="text"
+                   inputmode="numeric" placeholder="How many?"
+                   autocomplete="off">
+        </div>
 
-        picker.onchange = () => {
-            const file = picker.files[0];
-            if (!file) return;
+        <div class="field">
+            <label>Price per card</label>
+            <input class="price-input" type="text"
+                   inputmode="decimal" placeholder="Your price"
+                   autocomplete="off">
+        </div>
 
-            const reader = new FileReader();
-            reader.onload = event => setImage(event.target.result);
-            reader.readAsDataURL(file);
-        };
+        <div class="card-actions">
+            <span class="drag-handle" title="Drag to rearrange">☰ Drag</span>
+            <button class="remove-card" type="button">✕</button>
+        </div>
+    `;
 
-        picker.click();
-    });
+    const upload = card.querySelector(".image-upload");
+    const image = card.querySelector(".card-image");
+    const quantityInput = card.querySelector(".quantity-input");
+    const removeButton = card.querySelector(".remove-card");
 
-    const fields = document.createElement("div");
-    fields.className = "fields";
+    upload.addEventListener("change", function() {
+        const file = this.files && this.files[0];
+        if (!file) return;
 
-    function createField(labelText, value, placeholder, type) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "field";
-
-        const label = document.createElement("label");
-        label.textContent = labelText;
-
-        const input = document.createElement("input");
-        input.type = type;
-        input.value = value ?? "";
-        input.placeholder = placeholder;
-        input.autocomplete = "off";
-        input.setAttribute("aria-label", labelText);
-
-        if (type === "number") {
-            input.min = "0";
-            input.step = "1";
+        if (!file.type.startsWith("image/")) {
+            alert("Please choose an image file.");
+            this.value = "";
+            return;
         }
 
-        label.appendChild(input);
-        wrapper.appendChild(label);
-        return wrapper;
-    }
-
-    const quantity = createField("× Quantity", data.quantity ?? "1", "0", "number");
-    const price = createField("Price", data.price ?? "", "฿", "text");
-
-    fields.append(quantity, price);
-
-    const actions = document.createElement("div");
-    actions.className = "card-actions";
-
-    const removeButton = document.createElement("button");
-    removeButton.type = "button";
-    removeButton.className = "delete";
-    removeButton.textContent = "Remove";
-    removeButton.onclick = () => {
-        item.remove();
-        updateEmptyMessage();
-    };
-
-    actions.appendChild(removeButton);
-    item.append(imageArea, fields, actions);
-    grid.appendChild(item);
-    updateEmptyMessage();
-}
-
-/* Upload multiple card photos */
-document.getElementById("imageUpload").addEventListener("change", event => {
-    Array.from(event.target.files || []).forEach(file => {
-        if (!file.type.startsWith("image/")) return;
-
         const reader = new FileReader();
-        reader.onload = e => addCard({
-            image: e.target.result,
-            quantity: "1",
-            price: ""
-        });
+        reader.onload = function(event) {
+            image.src = event.target.result;
+        };
         reader.readAsDataURL(file);
     });
 
-    event.target.value = "";
-});
+    quantityInput.addEventListener("input", function() {
+        updateQuantityBadge(card);
+    });
 
-/* Wait for all card images before exporting */
-async function waitForImages(container) {
-    const images = Array.from(container.querySelectorAll("img"));
+    removeButton.addEventListener("click", function() {
+        card.remove();
+        updateEmptyMessage();
+    });
 
-    await Promise.all(images.map(img => {
-        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    // Drag-and-drop card reordering
+    card.addEventListener("dragstart", function(event) {
+        if (event.target.closest("input, button")) {
+            event.preventDefault();
+            return;
+        }
 
-        return new Promise(resolve => {
-            img.onload = resolve;
-            img.onerror = resolve;
+        draggedCard = card;
+        card.classList.add("dragging");
+
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", "card");
+        }
+    });
+
+    card.addEventListener("dragend", function() {
+        card.classList.remove("dragging");
+        grid.querySelectorAll(".card").forEach(item => {
+            item.classList.remove("drag-over");
         });
-    }));
+        draggedCard = null;
+    });
+
+    card.addEventListener("dragover", function(event) {
+        if (!draggedCard || draggedCard === card) return;
+
+        event.preventDefault();
+        card.classList.add("drag-over");
+    });
+
+    card.addEventListener("dragleave", function() {
+        card.classList.remove("drag-over");
+    });
+
+    card.addEventListener("drop", function(event) {
+        event.preventDefault();
+        card.classList.remove("drag-over");
+
+        if (!draggedCard || draggedCard === card) return;
+
+        const cards = Array.from(grid.querySelectorAll(".card"));
+        const draggedIndex = cards.indexOf(draggedCard);
+        const targetIndex = cards.indexOf(card);
+
+        if (draggedIndex < targetIndex) {
+            card.after(draggedCard);
+        } else {
+            card.before(draggedCard);
+        }
+    });
+
+    grid.appendChild(card);
+    updateEmptyMessage();
+
+    return card;
 }
 
-/* Export the entire card grid as ONE JPEG */
-async function exportJPEG() {
-    if (!grid.children.length) {
+addButton.addEventListener("click", function() {
+    const card = createCard();
+    card.querySelector(".image-upload").focus();
+});
+
+saveButton.addEventListener("click", async function() {
+    if (typeof html2canvas === "undefined") {
+        alert("The image-saving library did not load. Check your internet connection and try again.");
+        return;
+    }
+
+    if (!grid.querySelector(".card")) {
         alert("Please add at least one card first.");
         return;
     }
 
-    if (typeof html2canvas === "undefined") {
-        alert("The export library did not load. Check your internet connection and try again.");
-        return;
-    }
-
-    const button = document.querySelector('button[onclick="exportJPEG()"]');
-    button.disabled = true;
-    button.textContent = "Creating JPEG...";
-    statusText.textContent = "Preparing the complete image...";
-
-    const originalScroll = window.scrollY;
+    saveButton.disabled = true;
+    saveButton.textContent = "Creating JPEG...";
 
     try {
-        await waitForImages(grid);
+        // Update badges immediately before capturing the image
+        grid.querySelectorAll(".card").forEach(updateQuantityBadge);
 
-        document.body.classList.add("exporting");
+        grid.classList.add("export-mode");
 
-        await new Promise(resolve =>
-            requestAnimationFrame(() =>
-                requestAnimationFrame(resolve)
-            )
-        );
+        // Wait briefly for layout and image rendering
+        await new Promise(resolve => setTimeout(resolve, 150));
 
         const canvas = await html2canvas(grid, {
             backgroundColor: "#ffffff",
             scale: 2,
             useCORS: true,
-            logging: false,
-            width: grid.scrollWidth,
-            height: grid.scrollHeight,
-            windowWidth: 1250,
-            windowHeight: Math.max(grid.scrollHeight, 900),
-            scrollX: 0,
-            scrollY: 0
+            logging: false
         });
 
-        const blob = await new Promise(resolve =>
-            canvas.toBlob(resolve, "image/jpeg", 0.95)
-        );
-
-        if (!blob) throw new Error("JPEG creation failed.");
-
-        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.href = url;
-        link.download = "Card-Buy-List.jpg";
-        document.body.appendChild(link);
+        link.download = "Card-Buying-List.jpg";
+        link.href = canvas.toDataURL("image/jpeg", 0.95);
         link.click();
-        link.remove();
 
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
-
-        statusText.textContent = "✓ One complete JPEG image has been downloaded.";
     } catch (error) {
         console.error(error);
-        statusText.textContent = "Export failed. Try fewer or smaller card images.";
-        alert("Could not create the JPEG. Try fewer cards or smaller images.");
+        alert("Could not create the JPEG. Please try again.");
     } finally {
-        document.body.classList.remove("exporting");
-        button.disabled = false;
-        button.textContent = "📷 Save as JPEG";
-        window.scrollTo(0, originalScroll);
+        grid.classList.remove("export-mode");
+        saveButton.disabled = false;
+        saveButton.textContent = "Save as JPEG";
     }
-}
+});
 
-function clearList() {
-    if (!confirm("Remove all cards from this page?")) return;
-    grid.innerHTML = "";
-    statusText.textContent = "";
-    updateEmptyMessage();
-}
-
-updateEmptyMessage();
+// Start with one blank card
+createCard();
 </script>
+
 </body>
 </html>

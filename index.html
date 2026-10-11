@@ -8,7 +8,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
@@ -24,7 +26,9 @@ header, #cardGrid, #status {
     margin-right: auto;
 }
 
-h1 { margin: 0 0 8px; }
+h1 {
+    margin: 0 0 8px;
+}
 
 .instructions {
     color: #666;
@@ -63,7 +67,9 @@ button {
     padding: 8px 10px;
 }
 
-#multiUpload { display: none; }
+#multiUpload {
+    display: none;
+}
 
 #status {
     margin-bottom: 12px;
@@ -86,8 +92,13 @@ button {
     border-radius: 12px;
 }
 
-.card.dragging { opacity: .4; }
-.card.drag-over { border-color: #2563eb; }
+.card.dragging {
+    opacity: 0.4;
+}
+
+.card.drag-over {
+    border-color: #2563eb;
+}
 
 .card-image-wrap {
     position: relative;
@@ -132,7 +143,9 @@ button {
     font-size: 12px;
 }
 
-.field { margin-bottom: 10px; }
+.field {
+    margin-bottom: 10px;
+}
 
 .field label {
     display: block;
@@ -195,15 +208,27 @@ button {
     user-select: none;
 }
 
-/* Export uses the same card layout, with five columns. */
+/* Exported JPEG: fixed width, exactly five columns */
 .export-grid {
-    width: 1200px !important;
+    width: 1800px !important;
     max-width: none !important;
+    display: grid !important;
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 14px !important;
-    padding: 0 !important;
+    gap: 18px !important;
+    padding: 18px !important;
     margin: 0 !important;
     background: #f3f4f6 !important;
+    align-items: start !important;
+}
+
+.export-grid .card {
+    width: auto !important;
+    min-width: 0 !important;
+    padding: 12px !important;
+    opacity: 1 !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    background: #fff !important;
 }
 
 .export-grid .image-upload,
@@ -212,42 +237,69 @@ button {
     display: none !important;
 }
 
-.export-grid .card {
-    break-inside: avoid;
-    opacity: 1 !important;
+.export-grid .card-image-wrap {
+    width: 100% !important;
+    aspect-ratio: 3 / 4 !important;
+    margin-bottom: 12px !important;
+}
+
+.export-grid .price-bubble {
+    font-size: 38px !important;
+    font-weight: 900 !important;
+    padding: 15px 18px !important;
+    min-width: 140px !important;
+    bottom: 12px !important;
 }
 
 .export-grid .field {
-    margin: 10px 0;
+    margin: 10px 0 !important;
 }
 
-.export-grid .price-input {
-    border: none;
-    background: transparent;
-    padding: 4px 0;
-    font-size: 27px;
-    font-weight: 900;
-    text-align: center;
-    color: #111;
-    appearance: none;
+.export-grid .price-input,
+.export-grid .price-display {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 6px 0 !important;
+    border: none !important;
+    background: transparent !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 34px !important;
+    line-height: 1.2 !important;
+    font-weight: 900 !important;
+    text-align: center !important;
+    color: #111 !important;
+    overflow-wrap: anywhere !important;
 }
 
 .export-grid .quantity-display {
-    margin: 14px 0;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 16px 0 !important;
 }
 
 .export-grid .quantity-x {
-    font-size: 42px;
+    font-size: 54px !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
 }
 
-.export-grid .quantity-input {
-    font-size: 30px;
-    font-weight: 900;
-    text-align: center;
-    border: none;
-    background: transparent;
-    color: #111;
-    appearance: none;
+.export-grid .quantity-input,
+.export-grid .quantity-text {
+    display: block !important;
+    width: 120px !important;
+    height: auto !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 48px !important;
+    line-height: 1.2 !important;
+    font-weight: 900 !important;
+    text-align: center !important;
+    color: #111 !important;
 }
 
 @media (max-width: 900px) {
@@ -257,14 +309,18 @@ button {
 }
 
 @media (max-width: 560px) {
-    body { padding: 10px; }
+    body {
+        padding: 10px;
+    }
 
     #cardGrid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
     }
 
-    .card { padding: 7px; }
+    .card {
+        padding: 7px;
+    }
 
     .price-bubble {
         font-size: 19px;
@@ -272,7 +328,9 @@ button {
         padding: 8px 10px;
     }
 
-    .quantity-x { font-size: 30px; }
+    .quantity-x {
+        font-size: 30px;
+    }
 
     .quantity-input {
         width: 72px;
@@ -287,7 +345,7 @@ button {
     <h1>Card Buying List</h1>
 
     <div class="instructions">
-        Upload several card photos at once. Set your target price in Thai baht
+        Upload multiple card photos at once. Enter your target price in THB
         and the quantity you want. Drag cards to rearrange them.
     </div>
 
@@ -300,6 +358,7 @@ button {
 </header>
 
 <div id="status" role="status"></div>
+
 <main>
     <div id="cardGrid"></div>
 </main>
@@ -377,7 +436,11 @@ function createCard(imageData = "") {
         }
 
         const reader = new FileReader();
-        reader.onload = event => { image.src = event.target.result; };
+
+        reader.onload = event => {
+            image.src = event.target.result;
+        };
+
         reader.readAsDataURL(file);
     });
 
@@ -399,9 +462,11 @@ function createCard(imageData = "") {
 
     dragHandle.addEventListener("dragend", () => {
         card.classList.remove("dragging");
-        grid.querySelectorAll(".card").forEach(item =>
-            item.classList.remove("drag-over")
-        );
+
+        grid.querySelectorAll(".card").forEach(item => {
+            item.classList.remove("drag-over");
+        });
+
         draggedCard = null;
     });
 
@@ -498,24 +563,23 @@ function waitForImages(container) {
 
 saveButton.addEventListener("click", async () => {
     if (typeof html2canvas !== "function") {
-        alert("JPEG export library could not load. Check your internet connection and refresh.");
+        alert("JPEG library failed to load. Check your internet connection and refresh.");
         return;
     }
 
-    const originalCards = Array.from(grid.querySelectorAll(".card"));
+    const cards = Array.from(grid.querySelectorAll(".card"));
 
-    if (!originalCards.length) {
+    if (!cards.length) {
         alert("Please add at least one card first.");
         return;
     }
 
+    let exportGrid = null;
+
     saveButton.disabled = true;
     saveButton.textContent = "Creating JPEG...";
 
-    let exportGrid = null;
-
     try {
-        // Clone the current grid so its layout and cards remain unchanged.
         exportGrid = grid.cloneNode(true);
         exportGrid.id = "exportGrid";
         exportGrid.classList.add("export-grid");
@@ -525,38 +589,42 @@ saveButton.addEventListener("click", async () => {
         exportGrid.style.top = "0";
         exportGrid.style.zIndex = "-1";
 
-        const clonedCards = Array.from(exportGrid.querySelectorAll(".card"));
+        const copies = Array.from(exportGrid.querySelectorAll(".card"));
 
-        originalCards.forEach((original, index) => {
-            const copy = clonedCards[index];
+        cards.forEach((original, index) => {
+            const copy = copies[index];
             if (!copy) return;
 
-            // Preserve the exact photo shown in the editor.
             const originalImage = original.querySelector(".card-image");
             const copiedImage = copy.querySelector(".card-image");
 
-            if (originalImage.src) copiedImage.src = originalImage.src;
+            if (originalImage.src) {
+                copiedImage.src = originalImage.src;
+            }
 
-            // Update price bubble from the current price input.
+            copy.querySelector(".price-bubble").textContent =
+                original.querySelector(".price-bubble").textContent;
+
+            // Use large static text for the exported price.
             const priceInput = original.querySelector(".price-input");
-            const bubble = copy.querySelector(".price-bubble");
-            bubble.textContent = formatBaht(priceInput.value);
+            const priceDisplay = document.createElement("div");
+            priceDisplay.className = "price-display";
+            priceDisplay.textContent = priceInput.value === ""
+                ? "—"
+                : formatBaht(priceInput.value);
 
-            // Keep the price visible, without its editing label.
-            const copiedPriceInput = copy.querySelector(".price-input");
-            copiedPriceInput.value = priceInput.value;
-            copiedPriceInput.readOnly = true;
-            copiedPriceInput.tabIndex = -1;
+            copy.querySelector(".price-input").replaceWith(priceDisplay);
 
-            // Preserve the quantity exactly as currently entered.
+            // Use large static text for the exported quantity.
             const quantityInput = original.querySelector(".quantity-input");
-            const copiedQuantity = copy.querySelector(".quantity-input");
-            copiedQuantity.value = quantityInput.value;
-            copiedQuantity.readOnly = true;
-            copiedQuantity.tabIndex = -1;
+            const quantityText = document.createElement("div");
+            quantityText.className = "quantity-text";
+            quantityText.textContent = quantityInput.value || "0";
+
+            copy.querySelector(".quantity-input").replaceWith(quantityText);
         });
 
-        // Remove only editing controls. Keep the card image, price and quantity.
+        // Hide editing controls, not the price or quantity.
         exportGrid.querySelectorAll(
             ".image-upload, .card-actions, .field label"
         ).forEach(element => element.remove());
@@ -565,12 +633,13 @@ saveButton.addEventListener("click", async () => {
 
         await waitForImages(exportGrid);
 
+        // Render at high resolution, keeping five cards in every row.
         const canvas = await html2canvas(exportGrid, {
             backgroundColor: "#f3f4f6",
             scale: 2,
-            useCORS: true,
-            logging: false,
-            windowWidth: 1240
+            width: 1800,
+            windowWidth: 1840,
+            logging: false
         });
 
         const blob = await new Promise(resolve => {
@@ -589,7 +658,7 @@ saveButton.addEventListener("click", async () => {
         link.remove();
 
         setTimeout(() => URL.revokeObjectURL(url), 3000);
-        statusMessage.textContent = "Your JPEG has been saved.";
+        statusMessage.textContent = "JPEG saved successfully.";
 
     } catch (error) {
         console.error("JPEG export error:", error);

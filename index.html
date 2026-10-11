@@ -47,7 +47,7 @@ button {
     cursor: pointer;
 }
 
-#addCard, #uploadMultiple {
+#uploadMultiple, #addCard {
     background: #2563eb;
     color: white;
 }
@@ -195,21 +195,15 @@ button {
     user-select: none;
 }
 
-/* JPEG export layout */
+/* Export uses the same card layout, with five columns. */
 .export-grid {
-    width: 1500px !important;
+    width: 1200px !important;
     max-width: none !important;
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 18px !important;
-    padding: 24px !important;
-    background: white !important;
-}
-
-.export-grid .card {
-    padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 12px;
-    break-inside: avoid;
+    gap: 14px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #f3f4f6 !important;
 }
 
 .export-grid .image-upload,
@@ -218,23 +212,16 @@ button {
     display: none !important;
 }
 
-.export-grid .card-image-wrap {
-    margin-bottom: 10px;
-}
-
-.export-grid .price-bubble {
-    font-size: 34px;
-    font-weight: 900;
-    padding: 14px 18px;
-    min-width: 130px;
+.export-grid .card {
+    break-inside: avoid;
+    opacity: 1 !important;
 }
 
 .export-grid .field {
-    margin: 12px 0 0;
+    margin: 10px 0;
 }
 
-.export-grid .field input,
-.export-grid .price-text {
+.export-grid .price-input {
     border: none;
     background: transparent;
     padding: 4px 0;
@@ -242,41 +229,55 @@ button {
     font-weight: 900;
     text-align: center;
     color: #111;
-    overflow-wrap: anywhere;
+    appearance: none;
 }
 
 .export-grid .quantity-display {
-    margin: 12px 0 5px;
-    gap: 10px;
+    margin: 14px 0;
 }
 
 .export-grid .quantity-x {
-    font-size: 48px;
-    font-weight: 900;
+    font-size: 42px;
 }
 
-.export-grid .quantity-input,
-.export-grid .quantity-text {
-    width: 100px;
-    font-size: 42px;
+.export-grid .quantity-input {
+    font-size: 30px;
     font-weight: 900;
     text-align: center;
     border: none;
     background: transparent;
     color: #111;
+    appearance: none;
 }
 
 @media (max-width: 900px) {
-    #cardGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    #cardGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 560px) {
     body { padding: 10px; }
-    #cardGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+
+    #cardGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
     .card { padding: 7px; }
-    .price-bubble { font-size: 19px; min-width: 80px; padding: 8px 10px; }
+
+    .price-bubble {
+        font-size: 19px;
+        min-width: 80px;
+        padding: 8px 10px;
+    }
+
     .quantity-x { font-size: 30px; }
-    .quantity-input { width: 72px; font-size: 25px; }
+
+    .quantity-input {
+        width: 72px;
+        font-size: 25px;
+    }
 }
 </style>
 </head>
@@ -284,8 +285,9 @@ button {
 <body>
 <header>
     <h1>Card Buying List</h1>
+
     <div class="instructions">
-        Upload multiple card photos at once. Enter the price you want to pay in THB
+        Upload several card photos at once. Set your target price in Thai baht
         and the quantity you want. Drag cards to rearrange them.
     </div>
 
@@ -312,8 +314,10 @@ let draggedCard = null;
 
 function formatBaht(value) {
     if (value === "") return "฿0";
+
     const number = Number(value);
     if (!Number.isFinite(number)) return "฿0";
+
     return "฿" + number.toLocaleString("en-US", {
         maximumFractionDigits: 2
     });
@@ -367,7 +371,7 @@ function createCard(imageData = "") {
         if (!file) return;
 
         if (!file.type.startsWith("image/")) {
-            alert("Please choose an image file.");
+            alert("Please select an image file.");
             this.value = "";
             return;
         }
@@ -386,6 +390,7 @@ function createCard(imageData = "") {
     dragHandle.addEventListener("dragstart", event => {
         draggedCard = card;
         card.classList.add("dragging");
+
         if (event.dataTransfer) {
             event.dataTransfer.effectAllowed = "move";
             event.dataTransfer.setData("text/plain", "card");
@@ -394,7 +399,9 @@ function createCard(imageData = "") {
 
     dragHandle.addEventListener("dragend", () => {
         card.classList.remove("dragging");
-        grid.querySelectorAll(".card").forEach(item => item.classList.remove("drag-over"));
+        grid.querySelectorAll(".card").forEach(item =>
+            item.classList.remove("drag-over")
+        );
         draggedCard = null;
     });
 
@@ -413,9 +420,11 @@ function createCard(imageData = "") {
     card.addEventListener("drop", event => {
         event.preventDefault();
         card.classList.remove("drag-over");
+
         if (!draggedCard || draggedCard === card) return;
 
         const rect = card.getBoundingClientRect();
+
         if (event.clientY > rect.top + rect.height / 2) {
             card.after(draggedCard);
         } else {
@@ -438,25 +447,28 @@ multiUpload.addEventListener("change", function() {
 
     if (!files.length) return;
 
-    let loaded = 0;
+    let completed = 0;
+    let added = 0;
 
     files.forEach(file => {
         const reader = new FileReader();
 
         reader.onload = event => {
             createCard(event.target.result);
-            loaded++;
+            added++;
+            completed++;
 
-            if (loaded === files.length) {
-                statusMessage.textContent =
-                    files.length + " card photo(s) added.";
+            if (completed === files.length) {
+                statusMessage.textContent = added + " card photo(s) added.";
             }
         };
 
         reader.onerror = () => {
-            loaded++;
-            if (loaded === files.length) {
-                statusMessage.textContent = "Some photos could not be loaded.";
+            completed++;
+
+            if (completed === files.length) {
+                statusMessage.textContent =
+                    added + " photo(s) added. Some photos could not be loaded.";
             }
         };
 
@@ -475,6 +487,7 @@ function waitForImages(container) {
     return Promise.all(
         Array.from(container.querySelectorAll("img")).map(img => {
             if (img.complete) return Promise.resolve();
+
             return new Promise(resolve => {
                 img.onload = resolve;
                 img.onerror = resolve;
@@ -485,75 +498,90 @@ function waitForImages(container) {
 
 saveButton.addEventListener("click", async () => {
     if (typeof html2canvas !== "function") {
-        alert("The JPEG export library could not load. Check your internet connection and refresh.");
+        alert("JPEG export library could not load. Check your internet connection and refresh.");
         return;
     }
 
-    if (!grid.querySelector(".card")) {
-        alert("Please upload at least one card first.");
+    const originalCards = Array.from(grid.querySelectorAll(".card"));
+
+    if (!originalCards.length) {
+        alert("Please add at least one card first.");
         return;
     }
 
     saveButton.disabled = true;
     saveButton.textContent = "Creating JPEG...";
-    statusMessage.textContent = "Preparing your card list...";
 
-    let exportGrid;
+    let exportGrid = null;
 
     try {
+        // Clone the current grid so its layout and cards remain unchanged.
         exportGrid = grid.cloneNode(true);
         exportGrid.id = "exportGrid";
         exportGrid.classList.add("export-grid");
-
-        const originals = Array.from(grid.querySelectorAll(".card"));
-        const copies = Array.from(exportGrid.querySelectorAll(".card"));
-
-        originals.forEach((original, index) => {
-            const copy = copies[index];
-            if (!copy) return;
-
-            const originalImage = original.querySelector(".card-image");
-            const copyImage = copy.querySelector(".card-image");
-
-            if (originalImage.src) copyImage.src = originalImage.src;
-
-            const price = original.querySelector(".price-input").value.trim();
-            const quantity = original.querySelector(".quantity-input").value.trim();
-
-            const priceText = document.createElement("div");
-            priceText.className = "price-text";
-            priceText.textContent = price === "" ? "Price: —" : formatBaht(price);
-            copy.querySelector(".price-input").replaceWith(priceText);
-
-            const quantityText = document.createElement("span");
-            quantityText.className = "quantity-text";
-            quantityText.textContent = quantity || "0";
-            copy.querySelector(".quantity-input").replaceWith(quantityText);
-        });
 
         exportGrid.style.position = "fixed";
         exportGrid.style.left = "-20000px";
         exportGrid.style.top = "0";
         exportGrid.style.zIndex = "-1";
 
+        const clonedCards = Array.from(exportGrid.querySelectorAll(".card"));
+
+        originalCards.forEach((original, index) => {
+            const copy = clonedCards[index];
+            if (!copy) return;
+
+            // Preserve the exact photo shown in the editor.
+            const originalImage = original.querySelector(".card-image");
+            const copiedImage = copy.querySelector(".card-image");
+
+            if (originalImage.src) copiedImage.src = originalImage.src;
+
+            // Update price bubble from the current price input.
+            const priceInput = original.querySelector(".price-input");
+            const bubble = copy.querySelector(".price-bubble");
+            bubble.textContent = formatBaht(priceInput.value);
+
+            // Keep the price visible, without its editing label.
+            const copiedPriceInput = copy.querySelector(".price-input");
+            copiedPriceInput.value = priceInput.value;
+            copiedPriceInput.readOnly = true;
+            copiedPriceInput.tabIndex = -1;
+
+            // Preserve the quantity exactly as currently entered.
+            const quantityInput = original.querySelector(".quantity-input");
+            const copiedQuantity = copy.querySelector(".quantity-input");
+            copiedQuantity.value = quantityInput.value;
+            copiedQuantity.readOnly = true;
+            copiedQuantity.tabIndex = -1;
+        });
+
+        // Remove only editing controls. Keep the card image, price and quantity.
+        exportGrid.querySelectorAll(
+            ".image-upload, .card-actions, .field label"
+        ).forEach(element => element.remove());
+
         document.body.appendChild(exportGrid);
+
         await waitForImages(exportGrid);
 
         const canvas = await html2canvas(exportGrid, {
-            backgroundColor: "#ffffff",
+            backgroundColor: "#f3f4f6",
             scale: 2,
+            useCORS: true,
             logging: false,
-            windowWidth: 1600
+            windowWidth: 1240
         });
 
-        const blob = await new Promise(resolve =>
-            canvas.toBlob(resolve, "image/jpeg", 0.95)
-        );
+        const blob = await new Promise(resolve => {
+            canvas.toBlob(resolve, "image/jpeg", 0.95);
+        });
 
-        if (!blob) throw new Error("JPEG creation failed.");
+        if (!blob) throw new Error("Could not create JPEG.");
 
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
+
         link.href = url;
         link.download = "Card-Buying-List.jpg";
         document.body.appendChild(link);
@@ -562,18 +590,19 @@ saveButton.addEventListener("click", async () => {
 
         setTimeout(() => URL.revokeObjectURL(url), 3000);
         statusMessage.textContent = "Your JPEG has been saved.";
+
     } catch (error) {
-        console.error(error);
-        statusMessage.textContent = "Could not create the JPEG.";
-        alert("Could not save the image. Please refresh and try again.");
+        console.error("JPEG export error:", error);
+        alert("Could not save the JPEG. Please refresh and try again.");
     } finally {
         if (exportGrid) exportGrid.remove();
+
         saveButton.disabled = false;
         saveButton.textContent = "Save as JPEG";
     }
 });
 
-// Start with one card ready for a photo.
+// Start with one empty card.
 createCard();
 </script>
 </body>
